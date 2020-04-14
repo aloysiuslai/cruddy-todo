@@ -16,8 +16,10 @@ const zeroPaddedNumber = (num) => {
 };
 
 const readCounter = (callback) => {
-  fs.readFile(exports.counterFile, (err, fileData) => {
+  fs.readFile(exports.counterFile, (err, fileData) => { //If not found, err = true. Else fileData = true or exist
     if (err) {
+      // we don't want readFile to end with an error
+      // so instead, change count 0.
       callback(null, 0);
     } else {
       callback(null, Number(fileData));
@@ -29,7 +31,7 @@ const writeCounter = (count, callback) => {
   var counterString = zeroPaddedNumber(count);
   fs.writeFile(exports.counterFile, counterString, (err) => {
     if (err) {
-      throw ('error writing counter');
+      error('error writing counter');
     } else {
       callback(null, counterString);
     }
@@ -38,13 +40,32 @@ const writeCounter = (count, callback) => {
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = () => {
-  counter = counter + 1;
-  return zeroPaddedNumber(counter);
+exports.getNextUniqueId = (cb) => {
+
+  readCounter((err, count) => {
+    if (err) {
+      Error('Cannot Read')
+    } else {
+       count++
+    }
+    // err = null, count = 0
+    // increment count here if success?
+    // count++
+    writeCounter(count, (err, counterString)=> {
+      if (err) {
+        Error('Cannot Write')
+      } else {
+        cb(null, counterString);
+      }
+    })
+  })
+
+  // counter = counter + 1;
+  // return zeroPaddedNumber(counter);
 };
-
-
 
 // Configuration -- DO NOT MODIFY //////////////////////////////////////////////
 
 exports.counterFile = path.join(__dirname, 'counter.txt');
+
+// console.log(zeroPaddedNumber(2))
